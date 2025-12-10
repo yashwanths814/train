@@ -526,4 +526,3 @@ function InputRow({
     </div>
   );
 }
-
