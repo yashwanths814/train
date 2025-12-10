@@ -1,4 +1,3 @@
-// src/app/track/dashboard/TrackDashboardClient.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -51,7 +50,7 @@ type Material = {
   engineerPhotoUrl?: string;
 };
 
-export default function TrackDashboardClient() {
+export default function TrackMaterialPage() {
   // 🔹 ID from ?id=... (client side only)
   const [id, setId] = useState<string | null>(null);
 
@@ -90,12 +89,12 @@ export default function TrackDashboardClient() {
   // Load Firestore once id is known
   // --------------------------
   useEffect(() => {
-    if (!id) return;
+    if (!id) return; // TS now knows below this, id is string
 
-    async function load() {
+    async function load(materialId: string) {
       setLoading(true);
       try {
-        const snap = await getDoc(doc(db, "materials", id));
+        const snap = await getDoc(doc(db, "materials", materialId));
         if (!snap.exists()) {
           setMsg("Material not found.");
           setMaterial(null);
@@ -112,7 +111,8 @@ export default function TrackDashboardClient() {
       }
     }
 
-    load();
+    // ✅ id is string here, and we pass it as a string param
+    load(id);
   }, [id]);
 
   // Build QR URL only on client to avoid hydration mismatch
@@ -149,11 +149,14 @@ export default function TrackDashboardClient() {
   async function handleSave() {
     if (!id || !material) return;
 
+    // ✅ Narrowed: id is string in this branch
+    const materialDocId: string = id;
+
     setSaving(true);
     setMsg(null);
 
     try {
-      const ref = doc(db, "materials", id);
+      const ref = doc(db, "materials", materialDocId);
       const payload: Partial<Material> = {};
 
       if (role === "installation") {
